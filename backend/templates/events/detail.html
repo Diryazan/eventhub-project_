@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - EventHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-primary">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ event.title|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Основная информация -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg mb-4">
+                {% if event.image %}
+                <img src="{{ event.image.url }}" class="card-img-top event-detail-image" alt="{{ event.title }}">
+                {% else %}
+                <div class="event-detail-image d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #4ECDC4 0%, #6FFFE0 100%);">
+                    <i class="bi bi-calendar-event" style="font-size: 5rem; color: white;"></i>
+                </div>
+                {% endif %}
+                
+                <div class="card-body p-5">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h1 class="card-title display-5 fw-bold">{{ event.title }}</h1>
+                        {% if event.creator == user or user.is_admin %}
+                        <a href="{% url 'edit_event' event.id %}" class="btn btn-accent">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if event.category %}
+                    <span class="badge-category mb-4">{{ event.category.name }}</span>
+                    {% endif %}
+                    
+                    <!-- Основная информация -->
+                    <div class="row mb-5">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-primary me-3">
+                                    <i class="bi bi-calendar text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1"><strong>Дата и время</strong></h6>
+                                    <p class="mb-0 text-muted">{{ event.date|date:"d E Y года, H:i" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-success me-3">
+                                    <i class="bi bi-geo-alt text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1"><strong>Место проведения</strong></h6>
+                                    <p class="mb-0 text-muted">{{ event.location }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-warning me-3">
+                                    <i class="bi bi-cash text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1"><strong>Стоимость</strong></h6>
+                                    <p class="mb-0 text-muted">
+                                        {% if event.price > 0 %}
+                                        {{ event.price }} ₽
+                                        {% else %}
+                                        Бесплатно
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-circle bg-info me-3">
+                                    <i class="bi bi-people text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1"><strong>Участники</strong></h6>
+                                    <p class="mb-0 text-muted">
+                                        {{ confirmed_registrations_count }}
+                                        {% if event.max_participants > 0 %}
+                                        / {{ event.max_participants }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Прогресс-бар (если есть ограничение участников) -->
+                    {% if event.max_participants > 0 %}
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Заполненность</span>
+                            <span>
+                                {% widthratio confirmed_registrations_count event.max_participants 100 as percentage %}
+                                {{ percentage }}%
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 12px; border-radius: 6px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ percentage }}%; border-radius: 6px;"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Описание -->
+                    <h4 class="mb-3"><i class="bi bi-text-paragraph"></i> Описание мероприятия</h4>
+                    <div class="card-text mb-4" style="white-space: pre-line; line-height: 1.8; font-size: 1.1rem;">
+                        {{ event.description }}
+                    </div>
+                    
+                    <!-- Организатор -->
+                    <div class="d-flex align-items-center mt-5 pt-4 border-top">
+                        <div class="icon-circle bg-dark me-3">
+                            <i class="bi bi-person-circle text-white"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1"><strong>Организатор</strong></h6>
+                            <p class="mb-0">
+                                {{ event.creator.get_full_name|default:event.creator.username }}
+                                {% if event.creator.is_organizer %}
+                                <span class="organizer-badge ms-2">Организатор</span>
+                                {% endif %}
+                                {% if event.creator.is_admin %}
+                                <span class="admin-badge ms-2">Админ</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <div class="card shadow-lg sticky-top" style="top: 20px; border: none;">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-ticket-perforated"></i> Участие в мероприятии</h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Цена -->
+                    <div class="text-center mb-4">
+                        {% if event.price > 0 %}
+                        <h2 class="text-success fw-bold">{{ event.price }} ₽</h2>
+                        <p class="text-muted">Стоимость участия</p>
+                        {% else %}
+                        <h2 class="text-success fw-bold">Бесплатно</h2>
+                        <p class="text-muted">Вход свободный</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Информация о регистрации -->
+                    {% if user.is_authenticated %}
+                        {% if is_registered %}
+                        <div class="card mb-4" style="border-left: 4px solid #06D6A0;">
+                            <div class="card-body">
+                                <h6 class="card-title text-success">
+                                    <i class="bi bi-check-circle"></i> Вы зарегистрированы
+                                </h6>
+                                
+                                <p class="mb-2">
+                                    <strong>Статус:</strong>
+                                    {% if registration.status == 'confirmed' %}
+                                    <span class="badge bg-success">Подтверждено</span>
+                                    {% elif registration.status == 'pending' %}
+                                    <span class="badge bg-warning">Ожидает оплаты</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">{{ registration.get_status_display }}</span>
+                                    {% endif %}
+                                </p>
+                                
+                                {% if event.price > 0 %}
+                                <p class="mb-2">
+                                    <strong>Способ оплаты:</strong>
+                                    {% if registration.payment_method == 'cash' %}
+                                    <span class="badge bg-success">Наличные</span>
+                                    {% elif registration.payment_method == 'card_mir' %}
+                                    <span class="badge bg-primary">Карта МИР</span>
+                                    {% elif registration.payment_method == 'card_other' %}
+                                    <span class="badge bg-info">Карта</span>
+                                    {% endif %}
+                                </p>
+                                {% endif %}
+                                
+                                <!-- Кнопка отмены регистрации -->
+                                {% if can_cancel and registration.status == 'confirmed' %}
+                                <div class="mt-3">
+                                    <a href="{% url 'cancel_registration' registration.id %}" 
+                                       class="btn btn-outline-danger w-100">
+                                        <i class="bi bi-x-circle"></i> Отменить регистрацию
+                                    </a>
+                                </div>
+                                {% elif registration.status == 'cancelled' %}
+                                <div class="alert alert-secondary mt-2 mb-0">
+                                    <small>
+                                        <i class="bi bi-info-circle"></i>
+                                        Регистрация отменена
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <!-- Основная кнопка действия -->
+                    <div class="d-grid gap-3">
+                        {% if user.is_authenticated %}
+                            {% if is_registered %}
+                            <button class="btn btn-success" disabled>
+                                <i class="bi bi-check-circle"></i> Вы зарегистрированы
+                            </button>
+                            
+                            {% if event.price > 0 and payment and payment.status == 'pending' and registration.payment_method != 'cash' %}
+                            <a href="{% url 'process_payment' payment.id %}" class="btn btn-warning">
+                                <i class="bi bi-credit-card"></i> Перейти к оплате
+                            </a>
+                            {% endif %}
+                            
+                            {% elif event.status == 'published' %}
+                                {% if event.max_participants > 0 and confirmed_registrations_count >= event.max_participants %}
+                                <button class="btn btn-secondary" disabled>
+                                    <i class="bi bi-x-circle"></i> Мест нет
+                                </button>
+                                {% else %}
+                                <a href="{% url 'register_for_event' event.id %}" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-ticket-perforated"></i>
+                                    {% if event.price > 0 %}
+                                    Зарегистрироваться и оплатить
+                                    {% else %}
+                                    Зарегистрироваться
+                                    {% endif %}
+                                </a>
+                                {% endif %}
+                            {% else %}
+                            <button class="btn btn-secondary" disabled>
+                                Регистрация недоступна
+                            </button>
+                            {% endif %}
+                        {% else %}
+                        <a href="{% url 'login' %}?next={% url 'event_detail' event.id %}" 
+                           class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти для регистрации
+                        </a>
+                        <a href="{% url 'register' %}?next={% url 'event_detail' event.id %}" 
+                           class="btn btn-accent">
+                            <i class="bi bi-person-plus"></i> Зарегистрироваться
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Дополнительная информация -->
+                    <div class="mt-4 pt-3 border-top">
+                        <h6><i class="bi bi-info-circle"></i> Полезная информация</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <small><i class="bi bi-clock"></i> Регистрация открыта до начала мероприятия</small>
+                            </li>
+                            <li class="mb-2">
+                                <small><i class="bi bi-arrow-counterclockwise"></i> Отмена возможна за 24 часа до начала</small>
+                            </li>
+                            {% if event.price > 0 %}
+                            <li>
+                                <small><i class="bi bi-shield-check"></i> Безопасная оплата</small>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .event-detail-image {
+        height: 400px;
+        object-fit: cover;
+        width: 100%;
+    }
+    
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .icon-circle i {
+        font-size: 1.2rem;
+    }
+    
+    .sticky-top {
+        z-index: 1020;
+    }
+    
+    .border-top {
+        border-top: 2px solid #f0f0f0 !important;
+    }
+</style>
+{% endblock %}

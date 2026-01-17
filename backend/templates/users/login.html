@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход - EventHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+        border-radius: 20px;
+        padding: 40px;
+    }
+    
+    .login-header {
+        color: #be185d;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .login-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(236, 72, 153, 0.15);
+    }
+    
+    .heart-pulse {
+        color: #ec4899;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="login-container">
+                <h2 class="login-header">
+                    <i class="bi bi-heart-fill heart-pulse me-2"></i>
+                    Добро пожаловать обратно!
+                    <i class="bi bi-heart-fill heart-pulse ms-2"></i>
+                </h2>
+                
+                <div class="login-card">
+                    <div class="card-body p-5">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger" style="background-color: #fee2e2; border-color: #fecaca;">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                {% for error in form.non_field_errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-4">
+                                <label for="id_username" class="form-label" style="color: #831843;">Имя пользователя или Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background-color: #fce7f3; border-color: #fbcfe8;">
+                                        <i class="bi bi-person" style="color: #ec4899;"></i>
+                                    </span>
+                                    <input type="text" name="username" id="id_username" class="form-control" 
+                                           value="{{ form.username.value|default_if_none:'' }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="id_password" class="form-label" style="color: #831843;">Пароль</label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="background-color: #fce7f3; border-color: #fbcfe8;">
+                                        <i class="bi bi-lock" style="color: #ec4899;"></i>
+                                    </span>
+                                    <input type="password" name="password" id="id_password" class="form-control" required>
+                                </div>
+                                <div class="text-end mt-2">
+                                    <a href="#" class="text-decoration-none small" style="color: #ec4899;">
+                                        <i class="bi bi-key"></i> Забыли пароль?
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe" style="color: #831843;">
+                                    Запомнить меня
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i> Войти
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Еще нет аккаунта? 
+                                <a href="{% url 'register' %}" class="text-decoration-none fw-bold" style="color: #ec4899;">
+                                    <i class="bi bi-person-plus"></i> Зарегистрироваться
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+# Для Mac M1/M2 используем arm64 образ
+FROM python:3.11-slim
+
+# Устанавливаем зависимости для arm64
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    postgresql-client \
+    libpq-dev \
+    curl \
+    netcat-traditional \
+    && rm -rf /var/lib/apt/lists/*
+
+# Остальное аналогично основному Dockerfile
+WORKDIR /app
+COPY requirements-prod.txt .
+RUN pip install --no-cache-dir -r requirements-prod.txt
+COPY . .
+RUN mkdir -p static media logs
+EXPOSE 8000
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "eventhub.wsgi:application"]

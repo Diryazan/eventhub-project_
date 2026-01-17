@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Отмена регистрации - EventHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-x-circle"></i> Отмена регистрации
+                    </h4>
+                </div>
+                <div class="card-body p-5">
+                    <div class="alert alert-warning mb-4">
+                        <h5><i class="bi bi-exclamation-triangle"></i> Внимание!</h5>
+                        <p class="mb-0">Вы собираетесь отменить регистрацию на мероприятие.</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ registration.event.title }}</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><i class="bi bi-calendar"></i> <strong>Дата:</strong> {{ registration.event.date|date:"d E Y, H:i" }}</p>
+                                    <p class="mb-1"><i class="bi bi-geo-alt"></i> <strong>Место:</strong> {{ registration.event.location }}</p>
+                                    <p class="mb-0"><i class="bi bi-person"></i> <strong>Организатор:</strong> {{ registration.event.creator.get_full_name }}</p>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <p class="mb-1"><strong>Дата регистрации:</strong> {{ registration.created_at|date:"d.m.Y H:i" }}</p>
+                                    <p class="mb-0"><strong>Статус:</strong> 
+                                        <span class="badge bg-success">Подтверждено</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if refund_amount > 0 %}
+                    <div class="card mb-4 border-success">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="bi bi-arrow-counterclockwise"></i> Возврат средств</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <h3 class="text-success">{{ refund_amount }} ₽</h3>
+                                <p class="mb-0">Будет возвращено на вашу карту</p>
+                            </div>
+                            <div class="alert alert-info mt-3">
+                                <small>
+                                    <i class="bi bi-info-circle"></i> 
+                                    Средства поступят на вашу карту в течение 3-10 банковских дней.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Политика отмены</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Отмена возможна не позднее чем за 24 часа до начала мероприятия</li>
+                                <li>При отмене регистрации место освобождается для других участников</li>
+                                {% if registration.event.price > 0 %}
+                                    <li>При онлайн-оплате средства возвращаются на карту в полном объеме</li>
+                                    <li>При оплате наличными возврат согласовывается с организатором</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="reason" class="form-label">
+                                <strong>Причина отмены (необязательно):</strong>
+                            </label>
+                            <textarea name="reason" id="reason" class="form-control" rows="3" 
+                                      placeholder="Например: изменились планы, проблемы со здоровьем и т.д."></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'event_detail' registration.event.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Вернуться назад
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle"></i> Подтвердить отмену
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+лате все средства возвращаются на карту</li>
+{% endif %}
+</ul>
+</div>
+</div>
+
+<form method="post">
+{% csrf_token %}
+<div class="mb-4">
+<label for="reason" class="form-label"><strong>Причина отмены (необязательно):</strong></label>
+<textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Укажите причину отмены регистрации..."></textarea>
+</div>
+
+<div class="alert alert-danger">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" id="confirm_cancel" required>
+<label class="form-check-label" for="confirm_cancel">
+Я подтверждаю, что хочу отменить регистрацию на это мероприятие{% if refund_amount > 0 %} и согласен с возвратом средств{% endif %}.
+</label>
+</div>
+</div>
+
+<div class="d-flex justify-content-between">
+<a href="{% url 'event_detail' registration.event.id %}" class="btn btn-outline-secondary">
+<i class="bi bi-arrow-left"></i> Вернуться
+</a>
+<button type="submit" class="btn btn-danger" id="cancelBtn" disabled>
+<i class="bi bi-x-circle"></i> Отменить регистрацию
+</button>
+</div>
+</form>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const confirmCheckbox = document.getElementById('confirm_cancel');
+const cancelBtn = document.getElementById('cancelBtn');
+    
+confirmCheckbox.addEventListener('change', function() {
+cancelBtn.disabled = !this.checked;
+});
+    
+// Дополнительное подтверждение
+cancelBtn.addEventListener('click', function(e) {
+if (!confirm('Вы уверены, что хотите отменить регистрацию?')) {
+e.preventDefault();
+}
+});
+});
+</script>
+{% endblock %}

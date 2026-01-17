@@ -1,0 +1,15 @@
+version: "2"
+syncs:
+  eventhub-sync:
+    src: '.'
+    sync_strategy: 'native_osx'
+    sync_excludes:
+      - '.git'
+      - 'node_modules'
+      - '.venv'
+      - '__pycache__'
+      - '*.pyc'
+    watch_excludes:
+      - '*.log'
+      - 'media'
+      - 'static'

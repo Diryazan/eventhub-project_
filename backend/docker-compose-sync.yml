@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  postgres:
+    # ... существующая конфигурация ...
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  django:
+    # ... существующая конфигурация ...
+    volumes:
+      - eventhub-sync:/app:nocopy  # Используем docker-sync
+      - static_volume:/app/static
+      - media_volume:/app/media
+
+  # ... остальные сервисы ...
+
+volumes:
+  eventhub-sync:
+    external: true
+  # ... остальные volumes ...

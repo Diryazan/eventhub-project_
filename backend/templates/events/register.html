@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Регистрация на мероприятие - EventHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-ticket-perforated"></i> Регистрация на мероприятие
+                    </h4>
+                </div>
+                <div class="card-body p-5">
+                    <h5 class="mb-4">{{ event.title }}</h5>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><i class="bi bi-calendar"></i> <strong>Дата:</strong> {{ event.date|date:"d E Y, H:i" }}</p>
+                            <p><i class="bi bi-geo-alt"></i> <strong>Место:</strong> {{ event.location }}</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            {% if event.price > 0 %}
+                                <h3 class="text-success">{{ event.price }} ₽</h3>
+                                <small class="text-muted">Стоимость участия</small>
+                            {% else %}
+                                <h3 class="text-success">Бесплатно</h3>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if event.price > 0 %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Это платное мероприятие. Пожалуйста, выберите способ оплаты.
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if event.price > 0 %}
+                            <div class="mb-4">
+                                <h6>Выберите способ оплаты:</h6>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}
+                                    <div class="text-danger small">{{ form.payment_method.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="alert alert-light border">
+                                <h6><i class="bi bi-credit-card"></i> Способы оплаты:</h6>
+                                <ul class="mb-0">
+                                    <li><strong>💵 Наличные при встрече</strong> - оплатите организатору на месте проведения</li>
+                                    <li><strong>💳 Картой МИР онлайн</strong> - безопасная онлайн оплата картой МИР</li>
+                                    <li><strong>💳 Другой картой онлайн</strong> - оплата Visa/Mastercard/UnionPay</li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="payment_method" value="not_selected">
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle"></i> Это бесплатное мероприятие. Просто нажмите "Зарегистрироваться".
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Зарегистрироваться
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-check {
+    margin-bottom: 10px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.form-check:hover {
+    background-color: #f8f9fa;
+    border-color: #667eea;
+}
+
+.form-check-input:checked + .form-check-label {
+    font-weight: 600;
+}
+
+.form-check-label {
+    margin-left: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.form-check-label i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+</style>
+{% endblock %}

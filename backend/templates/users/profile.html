@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль - EventHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Левая колонка - информация -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-person-circle" style="font-size: 5rem; color: #667eea;"></i>
+                    </div>
+                    <h4>{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted">@{{ user.username }}</p>
+                    
+                    <div class="mb-3">
+                        {% if user.is_admin %}
+                        <span class="admin-badge">Администратор</span>
+                        {% elif user.is_organizer %}
+                        <span class="organizer-badge">Организатор</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Пользователь</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-start mt-4">
+                        <p>
+                            <i class="bi bi-envelope"></i>
+                            <strong>Email:</strong>
+                            <br>
+                            {{ user.email|default:"Не указан" }}
+                        </p>
+                        
+                        {% if user.phone %}
+                        <p>
+                            <i class="bi bi-telephone"></i>
+                            <strong>Телефон:</strong>
+                            <br>
+                            {{ user.phone }}
+                        </p>
+                        {% endif %}
+                        
+                        <p>
+                            <i class="bi bi-calendar"></i>
+                            <strong>Дата регистрации:</strong>
+                            <br>
+                            {{ user.date_joined|date:"d.m.Y" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правая колонка - редактирование -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil"></i> Редактирование профиля
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    Имя
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                <div class="text-danger small">{{ form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    Фамилия
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                <div class="text-danger small">{{ form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    Email
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                    Телефон
+                                </label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger small">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.bio.id_for_label }}" class="form-label">
+                                    О себе
+                                </label>
+                                {{ form.bio }}
+                                {% if form.bio.errors %}
+                                <div class="text-danger small">{{ form.bio.errors }}</div>
+                                {% endif %}
+                                <small class="text-muted">Расскажите о себе, своих интересах</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    
+    input:focus, textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+</style>
+{% endblock %}

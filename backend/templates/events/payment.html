@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Оплата мероприятия - EventHub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header {% if payment.status == 'completed' %}bg-success{% else %}bg-warning{% endif %} text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-credit-card"></i> Оплата мероприятия
+                    </h4>
+                </div>
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        {% if payment.status == 'completed' %}
+                            <div class="text-success mb-3">
+                                <i class="bi bi-check-circle-fill" style="font-size: 4rem;"></i>
+                            </div>
+                            <h3 class="text-success">Оплата успешно завершена!</h3>
+                        {% else %}
+                            <div class="text-warning mb-3">
+                                <i class="bi bi-credit-card" style="font-size: 4rem;"></i>
+                            </div>
+                            <h3>Подтверждение оплаты</h3>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><i class="bi bi-calendar"></i> <strong>Дата:</strong> {{ event.date|date:"d E Y, H:i" }}</p>
+                                    <p class="mb-1"><i class="bi bi-geo-alt"></i> <strong>Место:</strong> {{ event.location }}</p>
+                                    <p class="mb-0"><i class="bi bi-person"></i> <strong>Организатор:</strong> {{ event.creator.get_full_name }}</p>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <h3 class="text-success">{{ payment.amount }} ₽</h3>
+                                    <p class="text-muted mb-0">
+                                        {% if payment.payment_method == 'card_mir' %}
+                                            <i class="bi bi-credit-card"></i> Карта МИР
+                                        {% elif payment.payment_method == 'card_other' %}
+                                            <i class="bi bi-credit-card"></i> Банковская карта
+                                        {% else %}
+                                            <i class="bi bi-cash"></i> Наличные
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Детали платежа</h6>
+                        </div>
+                        <div class="card-body">
+                            <table class="table">
+                                <tr>
+                                    <td><strong>ID платежа:</strong></td>
+                                    <td>#{{ payment.id }}</td>
+                                </tr>
+                                {% if payment.transaction_id %}
+                                <tr>
+                                    <td><strong>ID транзакции:</strong></td>
+                                    <td>{{ payment.transaction_id }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td><strong>Способ оплаты:</strong></td>
+                                    <td>
+                                        {% if payment.payment_method == 'card_mir' %}
+                                            <span class="badge bg-primary">Карта МИР</span>
+                                        {% elif payment.payment_method == 'card_other' %}
+                                            <span class="badge bg-info">Банковская карта</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Наличные</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Статус:</strong></td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                            <span class="badge bg-success">Оплачено</span>
+                                        {% elif payment.status == 'processing' %}
+                                            <span class="badge bg-warning">В обработке</span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-secondary">Ожидает оплаты</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ payment.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Дата создания:</strong></td>
+                                    <td>{{ payment.created_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                                {% if payment.paid_at %}
+                                <tr>
+                                    <td><strong>Дата оплаты:</strong></td>
+                                    <td>{{ payment.paid_at|date:"d.m.Y H:i" }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if payment.status == 'pending' %}
+                    <div class="card mb-4 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0"><i class="bi bi-shield-check"></i> Безопасная оплата</h6>
+                        </div>
+                        <div class="card-body">
+                            <p>Для завершения регистрации необходимо произвести оплату.</p>
+                            <div class="alert alert-light border">
+                                <h6><i class="bi bi-info-circle"></i> Демо-режим оплаты:</h6>
+                                <p>Это тестовая среда. Нажмите "Оплатить" для имитации успешной оплаты.</p>
+                            </div>
+                            
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" name="action" value="cancel" class="btn btn-outline-secondary">
+                                        <i class="bi bi-x-circle"></i> Отмена
+                                    </button>
+                                    <button type="submit" name="action" value="pay" class="btn btn-success btn-lg">
+                                        <i class="bi bi-credit-card"></i> Оплатить {{ payment.amount }} ₽
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-lock"></i> Безопасность платежей:</h6>
+                        <ul class="mb-0">
+                            <li>Все платежи защищены SSL-шифрованием</li>
+                            <li>Данные карт обрабатываются через безопасный шлюз</li>
+                            <li>Мы не храним данные вашей карты</li>
+                            <li>Поддержка карт МИР, Visa, Mastercard</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'event_detail' event.id %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Вернуться к мероприятию
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
